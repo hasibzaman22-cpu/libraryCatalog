@@ -149,6 +149,23 @@
   cursor: not-allowed;
 }
 
+.auth-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.auth-checkbox input {
+  margin-top: 0.18rem;
+}
+
+.auth-link-row {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
 .auth-divider {
   display: flex;
   align-items: center;

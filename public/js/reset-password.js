@@ -1,29 +1,32 @@
-const form = document.getElementById("signup-form");
+const form = document.getElementById("reset-form");
 const msg = document.getElementById("auth-message");
 const submitBtn = document.getElementById("submit-btn");
 
+const params = new URLSearchParams(window.location.search);
+const token = String(params.get("token") ?? "").trim();
+
 function setLoading(loading) {
   submitBtn.disabled = loading;
-  submitBtn.textContent = loading ? "Creating…" : "Create account";
+  submitBtn.textContent = loading ? "Updating..." : "Update password";
 }
 
-form.addEventListener("submit", async (e) => {
+if (!token) {
+  msg.textContent = "Reset link is invalid. Request a new one.";
+  msg.classList.add("error");
+  submitBtn.disabled = true;
+}
+
+form?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!token) return;
+
   msg.textContent = "";
   msg.classList.remove("error", "ok");
 
   const fd = new FormData(form);
-  const email = String(fd.get("email") ?? "").trim();
   const password = String(fd.get("password") ?? "");
   const password2 = String(fd.get("password2") ?? "");
-  const name = String(fd.get("name") ?? "").trim();
-  const smsOptIn = fd.get("smsOptIn") === "on";
 
-  if (!email || !password) {
-    msg.textContent = "Email and password are required.";
-    msg.classList.add("error");
-    return;
-  }
   if (password.length < 8) {
     msg.textContent = "Password must be at least 8 characters.";
     msg.classList.add("error");
@@ -34,32 +37,27 @@ form.addEventListener("submit", async (e) => {
     msg.classList.add("error");
     return;
   }
-  if (!smsOptIn) {
-    msg.textContent = "You must agree to SMS recommendations to create an account.";
-    msg.classList.add("error");
-    return;
-  }
 
   setLoading(true);
   try {
-    const res = await fetch("/auth/register", {
+    const res = await fetch("/auth/reset-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({
-        email,
-        password,
-        name: name || undefined,
-        smsOptIn,
-      }),
+      body: JSON.stringify({ token, password }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      msg.textContent = data.error || "Could not create account.";
+      msg.textContent = data.error || "Could not reset password.";
       msg.classList.add("error");
       return;
     }
-    window.location.href = "/";
+    msg.textContent = "Password updated. Redirecting to sign in...";
+    msg.classList.add("ok");
+    form.reset();
+    setTimeout(() => {
+      window.location.href = "/login.html?reset=1";
+    }, 1200);
   } catch {
     msg.textContent = "Network error. Try again.";
     msg.classList.add("error");
