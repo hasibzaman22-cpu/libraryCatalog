@@ -131,10 +131,8 @@ export function userFacingRecommendError(err, channel) {
   if (channel === "email") {
     if (code === "EAUTH" || lower.includes("535") || lower.includes("username and password not accepted")) {
       return (
-        "Gmail (and many providers) no longer accept your normal account password for SMTP. " +
-        "Use an app password: Google Account → Security → 2-Step Verification (on) → App passwords. " +
-        "Set SMTP_USER to your full Gmail address and SMTP_PASS to the 16-character app password. " +
-        "See https://support.google.com/mail/?p=BadCredentials"
+        "SMTP authentication failed. Verify SMTP_USER and SMTP_PASS (or SMTP_URL), and if your provider " +
+        "requires app-specific passwords or SMTP access, enable that in your mail account settings."
       );
     }
     if (lower.includes("econnrefused") || lower.includes("etimedout") || lower.includes("enotfound")) {

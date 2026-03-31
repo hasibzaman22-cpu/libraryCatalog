@@ -3,21 +3,8 @@ const msg = document.getElementById("auth-message");
 const submitBtn = document.getElementById("submit-btn");
 
 const params = new URLSearchParams(window.location.search);
-const err = params.get("error");
 const reset = params.get("reset");
-if (err === "google") {
-  msg.textContent =
-    "Google sign-in did not complete. Try again or use email and password.";
-  msg.classList.add("error");
-} else if (err === "google_config") {
-  msg.textContent =
-    "Google sign-in needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file. Restart the server after saving.";
-  msg.classList.add("error");
-} else if (err === "google_bad_secret") {
-  msg.textContent =
-    "Google rejected the client secret. In Google Cloud Console → Credentials, open your OAuth 2.0 Web client, copy the Client secret again (or reset it), paste into GOOGLE_CLIENT_SECRET in .env with no extra spaces, then restart the server.";
-  msg.classList.add("error");
-} else if (reset === "1") {
+if (reset === "1") {
   msg.textContent = "Password reset successful. Sign in with your new password.";
   msg.classList.add("ok");
 }

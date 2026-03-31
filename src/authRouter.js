@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { normalizeEmail } from "./configurePassport.js";
-import { isGoogleOAuthConfigured } from "./googleEnv.js";
 
 const SALT_ROUNDS = 10;
 
@@ -16,10 +15,6 @@ function publicUser(user) {
     name: user.name ?? "",
     smsOptIn: Boolean(user.smsOptIn),
   };
-}
-
-function isGoogleEnabled() {
-  return isGoogleOAuthConfigured();
 }
 
 function appBaseUrl(req) {
@@ -55,10 +50,6 @@ function isSmtpConfigured() {
 
 export function createAuthRouter(users) {
   const router = express.Router();
-
-  router.get("/config", (_req, res) => {
-    res.json({ googleEnabled: isGoogleEnabled() });
-  });
 
   router.post("/register", async (req, res) => {
     const { email, password, name, smsOptIn } = req.body ?? {};
@@ -97,7 +88,6 @@ export function createAuthRouter(users) {
       name: displayName,
       passwordHash,
       smsOptIn: true,
-      googleId: null,
       createdAt: new Date(),
     });
     const user = await users.findOne({ _id: ins.insertedId });
@@ -230,26 +220,6 @@ export function createAuthRouter(users) {
     }
     res.json({ user: publicUser(req.user) });
   });
-
-  if (isGoogleEnabled()) {
-    router.get("/google", (req, res, next) => {
-      passport.authenticate("google", { scope: ["profile", "email"] })(
-        req,
-        res,
-        next
-      );
-    });
-
-    router.get(
-      "/google/callback",
-      passport.authenticate("google", {
-        failureRedirect: "/login.html?error=google",
-      }),
-      (_req, res) => {
-        res.redirect("/");
-      }
-    );
-  }
 
   return router;
 }

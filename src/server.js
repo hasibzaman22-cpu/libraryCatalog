@@ -18,7 +18,6 @@ import { buildFilter } from "./bookQuery.js";
 import { configurePassport } from "./configurePassport.js";
 import { createAuthRouter } from "./authRouter.js";
 import { scopeBooksToUser } from "./bookScope.js";
-import { isGoogleOAuthConfigured } from "./googleEnv.js";
 import {
   recommenderDisplayName,
   detectContactChannel,
@@ -75,7 +74,6 @@ async function main() {
   await ensureCoversDir();
 
   await users.createIndex({ email: 1 }, { unique: true });
-  await users.createIndex({ googleId: 1 }, { sparse: true });
 
   configurePassport(users);
 
@@ -486,24 +484,6 @@ async function main() {
 
   app.use(express.static(path.join(__dirname, "../public")));
 
-  app.use((err, req, res, next) => {
-    const googlePath = req.originalUrl?.includes("/auth/google");
-    if (googlePath && err) {
-      console.error("[Google OAuth]", err.message || err);
-      if (
-        err.name === "TokenError" ||
-        String(err.message || "").toLowerCase().includes("client secret") ||
-        String(err.message || "").toLowerCase().includes("invalid_client")
-      ) {
-        res.redirect("/login.html?error=google_bad_secret");
-        return;
-      }
-      res.redirect("/login.html?error=google");
-      return;
-    }
-    next(err);
-  });
-
   const PORT = Number(process.env.PORT) || 3000;
   const MAX_PORT_TRIES = 20;
   let server;
@@ -542,13 +522,6 @@ async function main() {
   console.log(
     `Server: http://localhost:${listenPort}  (Al-Mawā’il — sign in required)`
   );
-  if (isGoogleOAuthConfigured()) {
-    console.log("Google sign-in: enabled (OAuth routes active).");
-  } else {
-    console.log(
-      "Google sign-in: off — set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env next to package.json, then restart."
-    );
-  }
   console.log(
     `Recommendations: email ${isSmtpConfigured() ? "on" : "off"}, SMS ${isTwilioConfigured() ? "on" : "off"}`
   );
