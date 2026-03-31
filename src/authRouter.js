@@ -169,7 +169,7 @@ export function createAuthRouter(users) {
       await transport.sendMail({
         from,
         to: email,
-        subject: "Reset your Mawa'il password",
+        subject: "Reset your Al-Mawā’il password",
         text:
           "You requested a password reset.\n\n" +
           `Use this link within 1 hour:\n${link}\n\n` +

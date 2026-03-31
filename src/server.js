@@ -540,7 +540,7 @@ async function main() {
   }
 
   console.log(
-    `Server: http://localhost:${listenPort}  (Mawa'il — sign in required)`
+    `Server: http://localhost:${listenPort}  (Al-Mawā’il — sign in required)`
   );
   if (isGoogleOAuthConfigured()) {
     console.log("Google sign-in: enabled (OAuth routes active).");

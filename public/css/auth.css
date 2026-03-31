@@ -51,16 +51,6 @@
   margin-bottom: 1rem;
 }
 
-.auth-brand .brand-ar {
-  font-size: 1.05em;
-  letter-spacing: normal;
-  text-transform: none;
-  font-weight: 600;
-  opacity: 0.95;
-  margin-inline-start: 0.35rem;
-  white-space: nowrap;
-}
-
 .auth-headline {
   font-size: clamp(1.75rem, 4vw, 2.25rem);
   font-weight: 700;
