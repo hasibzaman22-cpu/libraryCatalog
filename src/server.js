@@ -20,7 +20,6 @@ import { createAuthRouter } from "./authRouter.js";
 import { scopeBooksToUser } from "./bookScope.js";
 import {
   recommenderDisplayName,
-  detectContactChannel,
   sendBookRecommendation,
   isSmtpConfigured,
   isTwilioConfigured,
@@ -427,17 +426,18 @@ async function main() {
 
     if (!first || !last || !c) {
       res.status(400).json({
-        error:
-          "Provide recipientFirstName, recipientLastName, and contact (email or phone).",
+        error: "Provide recipientFirstName, recipientLastName, and contact.",
       });
       return;
     }
 
-    const channel = detectContactChannel(c);
-    if (!channel) {
-      res.status(400).json({ error: "Enter an email or phone number." });
+    if (c.includes("@")) {
+      res.status(400).json({
+        error: "Email is not supported for recommendations. Enter a phone number.",
+      });
       return;
     }
+    const channel = "sms";
 
     const ownerId =
       req.user._id instanceof ObjectId

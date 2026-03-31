@@ -663,7 +663,7 @@ async function init() {
         return;
       }
       setRecommendMessage(
-        body.channel === "email" ? "Email sent." : "Text message sent.",
+        "Text message sent.",
         "ok"
       );
       recommendForm.reset();

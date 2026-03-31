@@ -193,8 +193,8 @@
         <h2 id="recommend-dialog-title">Recommend this book</h2>
         <p id="recommend-book-summary" class="recommend-book-summary"></p>
         <p class="field-hint" id="recommend-hint">
-          We’ll email if you enter an address, or text if you enter a mobile number. The server must have
-          SMTP or Twilio configured. If you saved notes on this book, they are included in the message.
+          Enter a mobile number to send this recommendation by text message. If you saved notes on this
+          book, they are included in the message.
         </p>
         <div class="field">
           <label for="recommend-recipient-first">Recipient first name</label>
@@ -217,14 +217,13 @@
           />
         </div>
         <div class="field">
-          <label for="recommend-contact">Email or phone</label>
+          <label for="recommend-contact">Phone number</label>
           <input
             id="recommend-contact"
             name="contact"
             type="text"
             required
             autocomplete="off"
-            placeholder="friend@email.com or +1 555 123 4567"
           />
         </div>
         <p id="recommend-form-message" class="form-message" role="status" aria-live="polite"></p>
