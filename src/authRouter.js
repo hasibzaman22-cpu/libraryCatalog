@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { normalizeEmail } from "./configurePassport.js";
+import { normalizeSmsDestination } from "./recommendNotify.js";
 
 const SALT_ROUNDS = 10;
 
@@ -14,6 +15,7 @@ function publicUser(user) {
     email: user.email,
     name: user.name ?? "",
     smsOptIn: Boolean(user.smsOptIn),
+    smsPhone: user.smsPhone ?? "",
   };
 }
 
@@ -52,7 +54,7 @@ export function createAuthRouter(users) {
   const router = express.Router();
 
   router.post("/register", async (req, res) => {
-    const { email, password, name, smsOptIn } = req.body ?? {};
+    const { email, password, name, smsOptIn, smsPhone } = req.body ?? {};
     if (typeof email !== "string" || typeof password !== "string") {
       res.status(400).json({ error: "Email and password are required." });
       return;
@@ -73,6 +75,13 @@ export function createAuthRouter(users) {
       });
       return;
     }
+    const normalizedSmsPhone = normalizeSmsDestination(smsPhone);
+    if (!normalizedSmsPhone) {
+      res.status(400).json({
+        error: "Enter a valid mobile number with country code (e.g. +15551234567).",
+      });
+      return;
+    }
     const displayName =
       typeof name === "string" && name.trim() ? name.trim() : em.split("@")[0];
 
@@ -88,6 +97,7 @@ export function createAuthRouter(users) {
       name: displayName,
       passwordHash,
       smsOptIn: true,
+      smsPhone: normalizedSmsPhone,
       createdAt: new Date(),
     });
     const user = await users.findOne({ _id: ins.insertedId });

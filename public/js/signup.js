@@ -18,6 +18,7 @@ form.addEventListener("submit", async (e) => {
   const password2 = String(fd.get("password2") ?? "");
   const name = String(fd.get("name") ?? "").trim();
   const smsOptIn = fd.get("smsOptIn") === "on";
+  const smsPhone = String(fd.get("smsPhone") ?? "").trim();
 
   if (!email || !password) {
     msg.textContent = "Email and password are required.";
@@ -39,6 +40,11 @@ form.addEventListener("submit", async (e) => {
     msg.classList.add("error");
     return;
   }
+  if (smsOptIn && !smsPhone) {
+    msg.textContent = "Enter your mobile number to opt in to SMS.";
+    msg.classList.add("error");
+    return;
+  }
 
   setLoading(true);
   try {
@@ -51,6 +57,7 @@ form.addEventListener("submit", async (e) => {
         password,
         name: name || undefined,
         smsOptIn,
+        smsPhone,
       }),
     });
     const data = await res.json().catch(() => ({}));

@@ -7,8 +7,6 @@ const authorDatalist = document.getElementById("author-suggestions");
 const authorHint = document.getElementById("author-hint");
 const publisherDatalist = document.getElementById("publisher-suggestions");
 const publisherHint = document.getElementById("publisher-hint");
-const bookPhotoInput = document.getElementById("book-photo");
-const scanPhotoStatus = document.getElementById("scan-photo-status");
 const userLabel = document.getElementById("user-label");
 const logoutBtn = document.getElementById("logout-btn");
 const loginLink = document.getElementById("login-link");
@@ -39,8 +37,6 @@ let editBookId = null;
 
 /** Last loaded book documents (for re-render without refetch). */
 let cachedBookDocs = [];
-/** @type {File | null} */
-let pendingBookPhotoFile = null;
 /** Per shelf category: when true, books on that shelf are sorted by title A–Z. */
 const shelfSortAlpha = new Map();
 
@@ -298,76 +294,6 @@ function setMessage(text, kind) {
   messageEl.textContent = text ?? "";
   messageEl.classList.remove("error", "ok");
   if (kind) messageEl.classList.add(kind);
-}
-
-function setScanPhotoStatus(text, kind) {
-  if (!scanPhotoStatus) return;
-  scanPhotoStatus.textContent = text ?? "";
-  scanPhotoStatus.classList.remove("error", "ok");
-  if (kind) scanPhotoStatus.classList.add(kind);
-}
-
-function ensureAutoDefaults(values) {
-  return {
-    title: values.title || "Untitled (from photo)",
-    author: values.author || "Unknown author",
-    publisher: values.publisher || "Unknown publisher",
-    category: values.category || "Uncategorized",
-    notes: values.notes ?? "",
-    isbn: values.isbn ?? "",
-  };
-}
-
-async function createBookAndOptionalCover(values, photoFile) {
-  const res = await fetch("/books", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    ...fetchOpts,
-    body: JSON.stringify(values),
-  });
-
-  if (res.status === 401) {
-    window.location.href = "/login.html";
-    return { ok: false, redirected: true };
-  }
-
-  let created = null;
-  let body = {};
-  try {
-    body = await res.json();
-    created = body;
-  } catch {
-    /* ignore */
-  }
-
-  if (!res.ok) {
-    return {
-      ok: false,
-      error: body.error || res.statusText,
-    };
-  }
-
-  let saveMsg = "Saved.";
-  if (photoFile && created) {
-    const createdId = bookIdString(created);
-    if (createdId) {
-      try {
-        const fdCover = new FormData();
-        fdCover.append("cover", photoFile);
-        const coverRes = await fetch(`/books/${encodeURIComponent(createdId)}/cover`, {
-          method: "POST",
-          ...fetchOpts,
-          body: fdCover,
-        });
-        if (!coverRes.ok) {
-          saveMsg = "Saved, but cover upload from photo failed.";
-        }
-      } catch {
-        saveMsg = "Saved, but cover upload from photo failed.";
-      }
-    }
-  }
-  return { ok: true, message: saveMsg };
 }
 
 function setRecommendMessage(text, kind) {
@@ -638,9 +564,9 @@ async function init() {
     const category = String(editCategory?.value ?? "").trim();
     const isbn = String(editIsbn?.value ?? "").trim();
     const notes = String(editNotes?.value ?? "");
-    if (!title || !author || !publisher || !category) {
+    if (!title || !author || !category) {
       setEditBookFormMessage(
-        "Title, author, publisher, and shelf are required.",
+        "Title, author, and shelf are required.",
         "error"
       );
       return;
@@ -754,79 +680,6 @@ async function init() {
     window.location.href = "/login.html";
   });
 
-  bookPhotoInput?.addEventListener("change", async () => {
-    const file = bookPhotoInput?.files?.[0] ?? null;
-    if (!file) {
-      pendingBookPhotoFile = null;
-      setScanPhotoStatus("Choose a cover photo to auto-read details and shelf the book.");
-      return;
-    }
-    setScanPhotoStatus("Reading text from your photo and shelving automatically…");
-    try {
-      const body = new FormData();
-      body.append("photo", file);
-      const res = await fetch("/books/extract-photo", {
-        method: "POST",
-        ...fetchOpts,
-        body,
-      });
-      let out = {};
-      try {
-        out = await res.json();
-      } catch {
-        /* ignore */
-      }
-      if (res.status === 401) {
-        window.location.href = "/login.html";
-        return;
-      }
-      if (!res.ok) {
-        setScanPhotoStatus(out.error || "Could not read that photo.", "error");
-        return;
-      }
-
-      const titleEl = form.querySelector('input[name="title"]');
-      const authorEl = form.querySelector('input[name="author"]');
-      const publisherEl = form.querySelector('input[name="publisher"]');
-      const categoryEl = form.querySelector('input[name="category"]');
-      const isbnEl = form.querySelector('input[name="isbn"]');
-      if (titleEl && out.title) titleEl.value = String(out.title);
-      if (authorEl && out.author) authorEl.value = String(out.author);
-      if (publisherEl && out.publisher) publisherEl.value = String(out.publisher);
-      if (categoryEl && !String(categoryEl.value ?? "").trim()) {
-        categoryEl.value = "Uncategorized";
-      }
-      if (isbnEl && out.isbn) isbnEl.value = String(out.isbn);
-
-      pendingBookPhotoFile = file;
-      const draft = ensureAutoDefaults({
-        title: String(titleEl?.value ?? "").trim(),
-        author: String(authorEl?.value ?? "").trim(),
-        publisher: String(publisherEl?.value ?? "").trim(),
-        category: String(categoryEl?.value ?? "").trim(),
-        notes: String(form.querySelector('textarea[name="notes"]')?.value ?? ""),
-        isbn: String(isbnEl?.value ?? "").trim(),
-      });
-      const save = await createBookAndOptionalCover(draft, pendingBookPhotoFile);
-      if (save.redirected) return;
-      if (!save.ok) {
-        setScanPhotoStatus(save.error || "Could not save from photo.", "error");
-        return;
-      }
-
-      form.reset();
-      pendingBookPhotoFile = null;
-      setMessage(save.message || "Saved.", "ok");
-      setScanPhotoStatus("Book added from photo. You can add another.", "ok");
-      await loadShelves();
-    } catch {
-      setScanPhotoStatus(
-        "Could not process that image. Try a clearer cover photo.",
-        "error"
-      );
-    }
-  });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     setMessage("");
@@ -839,25 +692,37 @@ async function init() {
     const notes = String(fd.get("notes") ?? "");
     const isbn = String(fd.get("isbn") ?? "").trim();
 
-    if (!title || !author || !publisher || !category) {
+    if (!title || !author || !category) {
       setMessage("Fill in every field.", "error");
       return;
     }
 
-    const save = await createBookAndOptionalCover(
-      { title, author, category, publisher, notes, isbn },
-      pendingBookPhotoFile
-    );
-    if (save.redirected) return;
-    if (!save.ok) {
-      setMessage(save.error || "Could not save.", "error");
+    const res = await fetch("/books", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      ...fetchOpts,
+      body: JSON.stringify({ title, author, category, publisher, notes, isbn }),
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        const err = await res.json();
+        if (err.error) detail = err.error;
+      } catch {
+        /* ignore */
+      }
+      setMessage(detail, "error");
       return;
     }
 
     form.reset();
-    pendingBookPhotoFile = null;
-    setScanPhotoStatus("");
-    setMessage(save.message || "Saved.", "ok");
+    setMessage("Saved.", "ok");
     await loadShelves();
   });
 

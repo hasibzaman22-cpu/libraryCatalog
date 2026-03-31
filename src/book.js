@@ -7,7 +7,7 @@ const MAX_ISBN_LENGTH = 32;
  * @param {string} title
  * @param {string} author
  * @param {string} category
- * @param {string} publisher
+ * @param {string} [publisher]
  * @param {string} [notes]
  * @param {string} [isbn]
  */
@@ -15,7 +15,7 @@ export function createBookDocument(
   title,
   author,
   category,
-  publisher,
+  publisher = "",
   notes = "",
   isbn = ""
 ) {
@@ -32,7 +32,7 @@ export function createBookDocument(
       title: title.trim(),
       author: author.trim(),
       category: category.trim(),
-      publisher: publisher.trim(),
+      publisher: String(publisher ?? "").trim(),
       notes: n.trim(),
       isbn: i,
     },

@@ -35,22 +35,6 @@
         <section class="card" aria-labelledby="add-heading">
           <h2 id="add-heading">Add a book</h2>
           <form id="add-form" class="add-form" novalidate>
-            <div class="photo-intake">
-              <label for="book-photo">Upload or take a book photo</label>
-              <input
-                id="book-photo"
-                name="bookPhoto"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                capture="environment"
-              />
-              <p class="field-hint" id="scan-photo-status">
-                Choose a cover photo to auto-read details and shelf the book.
-              </p>
-            </div>
-
-            <p class="or-divider" aria-hidden="true">OR</p>
-
             <div class="field">
               <label for="title">Title</label>
               <input id="title" type="text" name="title" required autocomplete="off" />
@@ -74,7 +58,6 @@
                 id="publisher"
                 type="text"
                 name="publisher"
-                required
                 autocomplete="off"
                 list="publisher-suggestions"
               />
@@ -95,7 +78,7 @@
               <p class="field-hint" id="category-hint"></p>
             </div>
             <div class="field">
-              <label for="isbn">ISBN</label>
+              <label for="isbn">ISBN (aid to retrieve cover photo)</label>
               <input
                 id="isbn"
                 name="isbn"
@@ -158,7 +141,6 @@
             id="edit-publisher"
             name="publisher"
             type="text"
-            required
             autocomplete="off"
             list="publisher-suggestions"
           />
@@ -176,7 +158,7 @@
           />
         </div>
         <div class="field">
-          <label for="edit-isbn">ISBN</label>
+          <label for="edit-isbn">ISBN (aid to retrieve cover photo)</label>
           <input
             id="edit-isbn"
             name="isbn"

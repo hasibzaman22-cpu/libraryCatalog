@@ -8,7 +8,6 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import passport from "passport";
 import { ObjectId } from "mongodb";
-import { createWorker } from "tesseract.js";
 import { connect, getMongoConfig } from "./db.js";
 import {
   createBookDocument,
@@ -65,90 +64,6 @@ const uploadCover = multer({
   },
 });
 
-const uploadScan = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 6 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    cb(null, /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype));
-  },
-});
-
-let ocrWorkerPromise = null;
-
-function getOcrWorker() {
-  if (!ocrWorkerPromise) {
-    ocrWorkerPromise = (async () => {
-      const worker = await createWorker("eng");
-      return worker;
-    })();
-  }
-  return ocrWorkerPromise;
-}
-
-function firstMeaningful(lines) {
-  for (const line of lines) {
-    const l = line.trim();
-    if (!l || l.length < 2) continue;
-    if (/^(isbn|www\.|copyright|all rights reserved)/i.test(l)) continue;
-    return l;
-  }
-  return "";
-}
-
-function guessFromCoverText(raw) {
-  const lines = String(raw ?? "")
-    .split(/\r?\n/g)
-    .map((x) => x.trim())
-    .filter(Boolean)
-    .slice(0, 40);
-
-  const title = firstMeaningful(lines);
-
-  let author = "";
-  for (const l of lines) {
-    const m = l.match(/^by\s+(.+)/i);
-    if (m && m[1]) {
-      author = m[1].trim();
-      break;
-    }
-  }
-  if (!author) {
-    for (const l of lines) {
-      if (/author/i.test(l)) {
-        author = l.replace(/author[:\s-]*/i, "").trim();
-        if (author) break;
-      }
-    }
-  }
-
-  let publisher = "";
-  for (const l of lines) {
-    if (/(press|publisher|publishing|books|house|media)/i.test(l)) {
-      publisher = l.trim();
-      break;
-    }
-  }
-
-  let isbn = "";
-  const textFlat = lines.join(" ");
-  const isbnMatches =
-    textFlat.match(/(?:97[89][\s-]?)?[0-9][0-9\s-]{8,16}[0-9Xx]/g) || [];
-  for (const m of isbnMatches) {
-    const normalized = m.replace(/[^0-9Xx]/g, "").toUpperCase();
-    if (normalized.length === 10 || normalized.length === 13) {
-      isbn = normalized;
-      break;
-    }
-  }
-
-  return {
-    title: title || "",
-    author: author || "",
-    publisher: publisher || "",
-    isbn,
-    ocrPreview: lines.slice(0, 10).join(" | "),
-  };
-}
 
 async function main() {
   const client = await connect();
@@ -224,18 +139,16 @@ async function main() {
     if (
       typeof title !== "string" ||
       typeof author !== "string" ||
-      typeof category !== "string" ||
-      typeof publisher !== "string"
+      typeof category !== "string"
     ) {
       res.status(400).json({
-        error:
-          "JSON body must include title, author, category, and publisher as strings.",
+        error: "JSON body must include title, author, and category as strings.",
       });
       return;
     }
-    if (!title.trim() || !author.trim() || !category.trim() || !publisher.trim()) {
+    if (!title.trim() || !author.trim() || !category.trim()) {
       res.status(400).json({
-        error: "title, author, category, and publisher cannot be empty.",
+        error: "title, author, and category cannot be empty.",
       });
       return;
     }
@@ -250,7 +163,13 @@ async function main() {
     try {
       doc = {
         userId: req.user._id,
-        ...createBookDocument(title, author, category, publisher, notesStr),
+        ...createBookDocument(
+          title,
+          author,
+          category,
+          typeof publisher === "string" ? publisher : "",
+          notesStr
+        ),
       };
     } catch (err) {
       res.status(400).json({ error: String(err.message ?? err) });
@@ -261,41 +180,6 @@ async function main() {
     res.status(201).json(found);
   });
 
-  app.post(
-    "/books/extract-photo",
-    requireAuth,
-    (req, res, next) => {
-      uploadScan.single("photo")(req, res, (err) => {
-        if (err?.code === "LIMIT_FILE_SIZE") {
-          res.status(400).json({ error: "Image must be 6 MB or smaller." });
-          return;
-        }
-        if (err) {
-          res.status(400).json({ error: "Invalid image upload." });
-          return;
-        }
-        next();
-      });
-    },
-    async (req, res) => {
-      if (!req.file?.buffer) {
-        res.status(400).json({ error: 'Send one image as form field "photo".' });
-        return;
-      }
-      try {
-        const worker = await getOcrWorker();
-        const out = await worker.recognize(req.file.buffer);
-        const guesses = guessFromCoverText(out?.data?.text ?? "");
-        res.json(guesses);
-      } catch (err) {
-        console.error("[ocr]", err);
-        res.status(502).json({
-          error:
-            "Could not read text from image. Try a clearer, front-cover photo with good lighting.",
-        });
-      }
-    }
-  );
 
   app.patch("/books/:id", requireAuth, async (req, res) => {
     let _id;
