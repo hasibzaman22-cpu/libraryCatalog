@@ -1,10 +1,14 @@
 import fs from "fs/promises";
+import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOCAL_COVERS_DIR = path.join(__dirname, "../uploads/covers");
+const SERVERLESS_COVERS_DIR = path.join(os.tmpdir(), "libraryCatalog", "covers");
 
-export const COVERS_DIR = path.join(__dirname, "../uploads/covers");
+// Vercel's deployment path is read-only; use tmp storage there.
+export const COVERS_DIR = process.env.VERCEL ? SERVERLESS_COVERS_DIR : LOCAL_COVERS_DIR;
 
 export async function ensureCoversDir() {
   await fs.mkdir(COVERS_DIR, { recursive: true });
