@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import express from "express";
 import multer from "multer";
 import session from "express-session";
+import MongoStore from "connect-mongo";
 import passport from "passport";
 import { ObjectId } from "mongodb";
 import { connect, getMongoConfig } from "./db.js";
@@ -79,6 +80,7 @@ async function main() {
   configurePassport(users);
 
   const app = express();
+  app.set("trust proxy", 1);
   app.use(express.json());
 
   const sessionSecret =
@@ -87,16 +89,25 @@ async function main() {
     console.warn("SESSION_SECRET not set; using a default (not for production).");
   }
 
+  const sessionMaxAgeMs = 7 * 24 * 60 * 60 * 1000;
+  const sessionCookieSecure = process.env.COOKIE_SECURE === "true";
+
   app.use(
     session({
       secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
+      store: MongoStore.create({
+        client,
+        dbName: getMongoConfig().dbName,
+        collectionName: "sessions",
+        ttl: Math.floor(sessionMaxAgeMs / 1000),
+      }),
       cookie: {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: sessionMaxAgeMs,
         sameSite: "lax",
-        secure: process.env.COOKIE_SECURE === "true",
+        secure: sessionCookieSecure,
       },
     })
   );
