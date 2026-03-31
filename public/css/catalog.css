@@ -147,7 +147,8 @@
   margin-bottom: 0.35rem;
 }
 
-.field input {
+.field input,
+.field textarea {
   width: 100%;
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--border);
@@ -156,7 +157,14 @@
   font-family: inherit;
 }
 
-.field input:focus {
+.field textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.field input:focus,
+.field textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
@@ -282,9 +290,195 @@
 }
 
 .book-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
   padding: 1rem 1rem;
   border-radius: var(--radius);
   transition: background 0.12s;
+}
+
+.book-cover-wrap {
+  flex-shrink: 0;
+  width: 4.5rem;
+}
+
+.book-cover-wrap--has-custom {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+}
+
+.btn-cover-remove {
+  padding: 0.2rem 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.btn-cover-remove:hover:not(:disabled) {
+  background: var(--bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-cover-remove:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.book-cover {
+  display: block;
+  width: 4.5rem;
+  height: 6.75rem;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.book-cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+  color: var(--text-muted);
+  padding: 0.35rem;
+}
+
+.book-cover-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.4rem;
+  box-sizing: border-box;
+  padding: 0.35rem 0.25rem;
+}
+
+.book-cover-fallback-msg {
+  font-size: 0.62rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.book-cover-fallback-msg.error {
+  color: var(--danger);
+}
+
+.btn-cover-upload {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.btn-cover-upload:hover {
+  background: var(--surface);
+}
+
+.book-cover-file-input {
+  display: none;
+}
+
+.book-card-inner {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.book-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.book-card-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  width: auto;
+  min-width: 6.5rem;
+}
+
+.btn-edit,
+.btn-recommend,
+.btn-delete-book {
+  flex-shrink: 0;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+
+.btn-edit {
+  color: var(--text-muted);
+}
+
+.btn-edit:hover {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-edit.has-notes {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+.btn-recommend {
+  color: var(--accent);
+}
+
+.btn-recommend:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.btn-delete-book {
+  color: var(--danger);
+  border-color: rgba(185, 28, 28, 0.35);
+}
+
+.btn-delete-book:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.08);
+  border-color: var(--danger);
+}
+
+.btn-delete-book:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .book-card:hover {
@@ -295,7 +489,7 @@
   border-top: 1px solid var(--border);
 }
 
-.book-title {
+.book-card-main .book-title {
   display: block;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -325,6 +519,35 @@
   opacity: 0.8;
 }
 
+@media (max-width: 640px) {
+  .book-card {
+    flex-wrap: wrap;
+  }
+
+  .book-cover-wrap {
+    width: 3.75rem;
+  }
+
+  .book-cover,
+  .book-cover--placeholder {
+    width: 3.75rem;
+    height: 5.625rem;
+  }
+
+  .book-card-inner {
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: min(100%, 12rem);
+  }
+
+  .book-card-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+}
+
 .empty,
 .loading {
   text-align: center;
@@ -334,4 +557,95 @@
   border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
+}
+
+.recommend-dialog {
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+}
+
+.edit-book-dialog.recommend-dialog {
+  max-width: 480px;
+  max-height: min(92vh, 720px);
+  overflow-y: auto;
+}
+
+.edit-book-dialog-lead {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.recommend-dialog::backdrop {
+  background: rgba(15, 15, 20, 0.4);
+}
+
+.recommend-dialog-form {
+  padding: 1.25rem 1.5rem;
+}
+
+.recommend-dialog-form h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.recommend-dialog-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 7rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  line-height: 1.45;
+  color: var(--text);
+  resize: vertical;
+}
+
+.recommend-dialog-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.recommend-dialog-form .field input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.recommend-dialog-form .field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.recommend-book-summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.recommend-dialog-form .field-hint {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.recommend-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }

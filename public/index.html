@@ -25,15 +25,11 @@
     <main class="catalog-main">
       <div class="catalog-intro">
         <h1>Your Library</h1>
-        <p>
-          Books grouped by Category.
-        </p>
       </div>
 
       <div class="catalog-layout">
         <section class="card" aria-labelledby="add-heading">
           <h2 id="add-heading">Add a book</h2>
-          <p class="card-desc">New rows appear under the matching shelf below.</p>
           <form id="add-form" class="add-form" novalidate>
             <div class="field">
               <label for="title">Title</label>
@@ -48,7 +44,6 @@
                 required
                 autocomplete="off"
                 list="author-suggestions"
-                placeholder="Pick a past author or type a new one"
               />
               <datalist id="author-suggestions"></datalist>
               <p class="field-hint" id="author-hint"></p>
@@ -62,7 +57,6 @@
                 required
                 autocomplete="off"
                 list="publisher-suggestions"
-                placeholder="Pick a past publisher or type a new one"
               />
               <datalist id="publisher-suggestions"></datalist>
               <p class="field-hint" id="publisher-hint"></p>
@@ -76,10 +70,28 @@
                 required
                 autocomplete="off"
                 list="category-suggestions"
-                placeholder="Choose a suggestion or type a new shelf"
               />
               <datalist id="category-suggestions"></datalist>
               <p class="field-hint" id="category-hint"></p>
+            </div>
+            <div class="field">
+              <label for="isbn">ISBN</label>
+              <input
+                id="isbn"
+                name="isbn"
+                type="text"
+                autocomplete="off"
+              />
+              <p class="field-hint">Shows a cover image on the shelf when Open Library has art for this ISBN.</p>
+            </div>
+            <div class="field">
+              <label for="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                rows="3"
+                autocomplete="off"
+              ></textarea>
             </div>
             <button type="submit" class="btn-add">Add to shelf</button>
           </form>
@@ -89,12 +101,136 @@
         <section class="shelves-wrap" aria-labelledby="shelves-heading">
           <div class="shelves-header">
             <h2 id="shelves-heading">Shelves</h2>
-            <button type="button" class="btn-nav" id="refresh-btn">Refresh</button>
           </div>
           <div id="shelves" class="shelves"></div>
         </section>
       </div>
     </main>
+
+    <dialog
+      id="edit-book-dialog"
+      class="recommend-dialog edit-book-dialog"
+      aria-labelledby="edit-book-dialog-title"
+    >
+      <form id="edit-book-form" class="recommend-dialog-form" novalidate>
+        <h2 id="edit-book-dialog-title">Edit book</h2>
+        <p class="field-hint edit-book-dialog-lead">
+          Change shelf, ISBN, publisher, or anything else. The book moves to the shelf you set under
+          <strong>Shelf</strong>.
+        </p>
+        <div class="field">
+          <label for="edit-title">Title</label>
+          <input id="edit-title" name="title" type="text" required autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="edit-author">Author</label>
+          <input
+            id="edit-author"
+            name="author"
+            type="text"
+            required
+            autocomplete="off"
+            list="author-suggestions"
+          />
+        </div>
+        <div class="field">
+          <label for="edit-publisher">Publisher</label>
+          <input
+            id="edit-publisher"
+            name="publisher"
+            type="text"
+            required
+            autocomplete="off"
+            list="publisher-suggestions"
+          />
+        </div>
+        <div class="field">
+          <label for="edit-category">Shelf (category)</label>
+          <input
+            id="edit-category"
+            name="category"
+            type="text"
+            required
+            autocomplete="off"
+            list="category-suggestions"
+            placeholder="Existing shelf or a new name"
+          />
+        </div>
+        <div class="field">
+          <label for="edit-isbn">ISBN</label>
+          <input
+            id="edit-isbn"
+            name="isbn"
+            type="text"
+            autocomplete="off"
+          />
+          <p class="field-hint">
+            On the shelf, use <strong>Upload cover</strong> if Open Library has no image, or <strong>Remove photo</strong> to delete your upload.
+          </p>
+        </div>
+        <div class="field">
+          <label for="edit-notes">Notes</label>
+          <textarea
+            id="edit-notes"
+            name="notes"
+            rows="4"
+            autocomplete="off"
+          ></textarea>
+        </div>
+        <p id="edit-book-form-message" class="form-message" role="status" aria-live="polite"></p>
+        <div class="recommend-dialog-actions">
+          <button type="button" class="btn-nav" id="edit-book-cancel">Cancel</button>
+          <button type="submit" class="btn-add" id="edit-book-save">Save changes</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="recommend-dialog" class="recommend-dialog" aria-labelledby="recommend-dialog-title">
+      <form id="recommend-form" class="recommend-dialog-form" novalidate>
+        <h2 id="recommend-dialog-title">Recommend this book</h2>
+        <p id="recommend-book-summary" class="recommend-book-summary"></p>
+        <p class="field-hint" id="recommend-hint">
+          We’ll email if you enter an address, or text if you enter a mobile number. The server must have
+          SMTP or Twilio configured. If you saved notes on this book, they are included in the message.
+        </p>
+        <div class="field">
+          <label for="recommend-recipient-first">Recipient first name</label>
+          <input
+            id="recommend-recipient-first"
+            name="recipientFirstName"
+            type="text"
+            required
+            autocomplete="given-name"
+          />
+        </div>
+        <div class="field">
+          <label for="recommend-recipient-last">Recipient last name</label>
+          <input
+            id="recommend-recipient-last"
+            name="recipientLastName"
+            type="text"
+            required
+            autocomplete="family-name"
+          />
+        </div>
+        <div class="field">
+          <label for="recommend-contact">Email or phone</label>
+          <input
+            id="recommend-contact"
+            name="contact"
+            type="text"
+            required
+            autocomplete="off"
+            placeholder="friend@email.com or +1 555 123 4567"
+          />
+        </div>
+        <p id="recommend-form-message" class="form-message" role="status" aria-live="polite"></p>
+        <div class="recommend-dialog-actions">
+          <button type="button" class="btn-nav" id="recommend-cancel">Cancel</button>
+          <button type="submit" class="btn-add" id="recommend-send">Send</button>
+        </div>
+      </form>
+    </dialog>
 
     <script src="/app.js" type="module"></script>
   </body>
