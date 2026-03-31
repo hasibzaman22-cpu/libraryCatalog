@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_COVERS_DIR = path.join(__dirname, "../uploads/covers");
-const SERVERLESS_COVERS_DIR = path.join(os.tmpdir(), "libraryCatalog", "covers");
+const SERVERLESS_COVERS_DIR = path.join(os.tmpdir(), "mawail", "covers");
 
 // Vercel's deployment path is read-only; use tmp storage there.
 export const COVERS_DIR = process.env.VERCEL ? SERVERLESS_COVERS_DIR : LOCAL_COVERS_DIR;

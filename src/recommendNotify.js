@@ -119,7 +119,7 @@ async function sendSmtpMail({ to, subject, text }) {
 }
 
 /**
- * Safe, actionable message for the catalog UI (no secrets).
+ * Safe, actionable message for the Mawa'il UI (no secrets).
  * @param {unknown} err
  * @param {'email' | 'sms'} channel
  */

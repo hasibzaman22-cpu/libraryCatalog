@@ -93,6 +93,22 @@
   letter-spacing: -0.02em;
 }
 
+.catalog-intro h1 .brand-ar {
+  font-size: 0.65em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-inline-start: 0.35rem;
+  white-space: nowrap;
+}
+
+.catalog-tagline {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
 .catalog-intro p {
   margin: 0;
   color: var(--text-muted);
